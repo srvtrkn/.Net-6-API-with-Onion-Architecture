@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Odeon.DataAccess.Contexts;
 
@@ -11,9 +12,10 @@ using Odeon.DataAccess.Contexts;
 namespace Odeon.DataAccess.Migrations
 {
     [DbContext(typeof(OdeonDbContext))]
-    partial class OdeonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220611113112_mig_02")]
+    partial class mig_02
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -15,8 +15,8 @@ namespace Odeon.Test
             {
                 HotelId = "A4469F56-6CDF-4BF0-ACBA-65E9177E4CCA",
                 RoomTypeId = "CAD176C0-57FC-408D-9BED-DB1028EC8F3D",
-                BookingDateStart = DateTime.Now,
-                BookingDateEnd = DateTime.Now.AddDays(5),
+                BookingDateStart = DateTime.Now.ToString(),
+                BookingDateEnd = DateTime.Now.AddDays(5).ToString(),
                 RequestedRoomCount = 2
 
             };

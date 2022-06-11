@@ -13,43 +13,64 @@ namespace Odeon.Application.Services.Room
         }
         public async Task<ResponseList<CheapestRoom>> GetCheapestRoomPrices()
         {
-            var result = hotelRoomReadRepository.GetCheapestRoom().Select(h => new CheapestRoom
+            try
             {
-                HotelId = h.Hotel.Id.ToString(),
-                HotelName = h.Hotel.HotelName,
-                RoomTypeId = h.RoomType.Id.ToString(),
-                RoomTypeName = h.RoomType.RoomTypeName,
-                Price = h.Price
-            }).OrderBy(h => h.Price).ThenBy(h => h.HotelName).ToList();
-            return new ResponseList<CheapestRoom> { Success = true, DataList = result };
+                var result = hotelRoomReadRepository.GetCheapestRoom().Select(h => new CheapestRoom
+                {
+                    HotelId = h.Hotel.Id.ToString(),
+                    HotelName = h.Hotel.HotelName,
+                    RoomTypeId = h.RoomType.Id.ToString(),
+                    RoomTypeName = h.RoomType.RoomTypeName,
+                    Price = h.Price
+                }).OrderBy(h => h.Price).ThenBy(h => h.HotelName).ToList();
+                return new ResponseList<CheapestRoom> { Success = true, DataList = result };
+            }
+            catch (Exception e)
+            {
+                return new ResponseList<CheapestRoom> { Success = false, Message = e.Message };
+            }
         }
         public async Task<ResponseList<CheapestRoom>> AdvancedRoomSearch(RoomSearchRequest req)
         {
-            if (req.RoomTypeIds.Count > 0)
+            try
             {
-                var result = hotelRoomReadRepository.GetWhere(h => !h.LogicalDeleteKey.HasValue && (req.HotelIds.Contains(h.HotelId.ToString()) || req.RoomTypeIds.Contains(h.RoomTypeId.ToString())), false)
-                    .Select(h => new CheapestRoom
-                    {
-                        HotelId = h.Hotel.Id.ToString(),
-                        HotelName = h.Hotel.HotelName,
-                        RoomTypeId = h.RoomType.Id.ToString(),
-                        RoomTypeName = h.RoomType.RoomTypeName,
-                        Price = h.Price
-                    }).OrderBy(h => h.Price).ThenBy(h => h.HotelName).ToList();
-                return new ResponseList<CheapestRoom> { Success = true, DataList = result };
+                if (req.RoomTypeIds.Count > 0)
+                {
+                    var result = hotelRoomReadRepository.GetWhere(h => !h.LogicalDeleteKey.HasValue && (req.HotelIds.Contains(h.HotelId.ToString()) || req.RoomTypeIds.Contains(h.RoomTypeId.ToString())), false)
+                        .Select(h => new CheapestRoom
+                        {
+                            HotelId = h.Hotel.Id.ToString(),
+                            HotelName = h.Hotel.HotelName,
+                            RoomTypeId = h.RoomType.Id.ToString(),
+                            RoomTypeName = h.RoomType.RoomTypeName,
+                            Price = h.Price
+                        }).OrderBy(h => h.Price).ThenBy(h => h.HotelName).ToList();
+                    return new ResponseList<CheapestRoom> { Success = true, DataList = result };
+                }
+                else return new ResponseList<CheapestRoom> { Success = false, Message = "Oda tipi bilgisi göndermeniz gerekmektedir" };
             }
-            else return new ResponseList<CheapestRoom> { Success = false, Message = "Oda tipi bilgisi göndermeniz gerekmektedir" };
+            catch (Exception e)
+            {
+                return new ResponseList<CheapestRoom> { Success = false, Message = e.Message };
+            }
         }
         public async Task<Response<bool>> RoomAvailabilityCheck(RoomAvailabilityCheckRequest req)
         {
-            var hRoom = await hotelRoomReadRepository.GetSingleAsync(h => !h.LogicalDeleteKey.HasValue && req.HotelIds.Contains(h.Hotel.Id.ToString()) && req.RoomTypeIds.Contains(h.RoomType.Id.ToString()), false);
-            bool isEmptyRoom = hRoom != null && (hRoom.MaxAllotment - hRoom.SoldAllotment) >= req.RequestedRoomCount;
-            return new Response<bool>
+            try
             {
-                Success = isEmptyRoom,
-                Message = isEmptyRoom ? "Rezervasyona uygun oda bulunmaktadır" : "Rezervasyona uygun oda bulunmamaktadır",
-                Data = isEmptyRoom
-            };
+                var hRoom = await hotelRoomReadRepository.GetSingleAsync(h => !h.LogicalDeleteKey.HasValue && req.HotelIds.Contains(h.Hotel.Id.ToString()) && req.RoomTypeIds.Contains(h.RoomType.Id.ToString()), false);
+                bool isEmptyRoom = hRoom != null && (hRoom.MaxAllotment - hRoom.SoldAllotment) >= req.RequestedRoomCount;
+                return new Response<bool>
+                {
+                    Success = isEmptyRoom,
+                    Message = isEmptyRoom ? "Rezervasyona uygun oda bulunmaktadır" : "Rezervasyona uygun oda bulunmamaktadır",
+                    Data = isEmptyRoom
+                };
+            }
+            catch (Exception e)
+            {
+                return new Response<bool> { Success = false, Message = e.Message };
+            }
         }
     }
 }

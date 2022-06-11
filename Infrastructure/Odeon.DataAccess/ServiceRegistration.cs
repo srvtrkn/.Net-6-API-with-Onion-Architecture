@@ -20,6 +20,7 @@ namespace Odeon.DataAccess
             services.AddScoped<IReservationWriteRepository, ReservationWriteRepository>();
             services.AddScoped<IRoomTypeReadRepository, RoomTypeReadRepository>();
             services.AddScoped<IRoomTypeWriteRepository, RoomTypeWriteRepository>();
+            services.AddScoped<ILogWriteRepository, LogWriteRepository>();
         }
     }
 }

@@ -5,7 +5,7 @@
         public string HotelId { get; set; }
         public string RoomTypeId { get; set; }
         public int RequestedRoomCount { get; set; }
-        public DateTime BookingDateStart { get; set; }
-        public DateTime BookingDateEnd { get; set; }
+        public string BookingDateStart { get; set; }
+        public string BookingDateEnd { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using Odeon.API.Extensions;
 using Odeon.Application;
 using Odeon.DataAccess;
 
@@ -24,7 +25,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+// Logging requests and responses 
+app.UseMiddleware<RequestResponseLogging>();
 app.UseStaticFiles();
 app.UseCors();
 app.UseHttpsRedirection();

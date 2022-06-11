@@ -11,6 +11,7 @@ namespace Odeon.DataAccess.Contexts
         public DbSet<HotelRoom> HotelRooms { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
+        public DbSet<Log> Logs { get; set; }
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var datas = ChangeTracker

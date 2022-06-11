@@ -20,62 +20,84 @@ namespace Odeon.Application.Services.Reservations
         }
         public async Task<Response<string>> CreateReservation(CreateReservationRequest req)
         {
-            var hRoom = await hotelRoomReadRepository.GetSingleAsync(h => h.Hotel.Id == new Guid(req.HotelId) && h.RoomType.Id == new Guid(req.RoomTypeId) && !h.LogicalDeleteKey.HasValue);
-            if ((hRoom.MaxAllotment - hRoom.SoldAllotment) >= req.RequestedRoomCount)
+            try
             {
-                Guid reservationId = Guid.NewGuid();
-                await reservationWriteRepository.AddAsync(new()
+                var hRoom = await hotelRoomReadRepository.GetSingleAsync(h => h.Hotel.Id == new Guid(req.HotelId) && h.RoomType.Id == new Guid(req.RoomTypeId) && !h.LogicalDeleteKey.HasValue);
+                if ((hRoom.MaxAllotment - hRoom.SoldAllotment) >= req.RequestedRoomCount)
                 {
-                    Id = reservationId,
-                    StartDate = req.BookingDateStart,
-                    EndDate = req.BookingDateEnd,
-                    RoomCount = req.RequestedRoomCount,
-                    HotelRoom = hRoom
-                });
+                    Guid reservationId = Guid.NewGuid();
+                    await reservationWriteRepository.AddAsync(new()
+                    {
+                        Id = reservationId,
+                        StartDate = Convert.ToDateTime(req.BookingDateStart),
+                        EndDate = Convert.ToDateTime(req.BookingDateEnd),
+                        RoomCount = req.RequestedRoomCount,
+                        HotelRoom = hRoom
+                    });
 
-                int result = await reservationWriteRepository.SaveAsync();
-                if (result > 0)
-                {
-                    hRoom.SoldAllotment = hRoom.SoldAllotment + req.RequestedRoomCount;
-                    result = await hotelRoomWriteRepository.SaveAsync();
+                    int result = await reservationWriteRepository.SaveAsync();
+                    if (result > 0)
+                    {
+                        hRoom.SoldAllotment = hRoom.SoldAllotment + req.RequestedRoomCount;
+                        result = await hotelRoomWriteRepository.SaveAsync();
+                    }
+                    return new Response<string>
+                    {
+                        Success = result > 0 ? true : false,
+                        Message = result > 0 ? "Rezervasyon oluşturuldu" : "Rezervasyon işlemi esnasında bir hata oluştu",
+                        Data = result > 0 ? reservationId.ToString() : ""
+                    };
                 }
                 return new Response<string>
                 {
-                    Success = result > 0 ? true : false,
-                    Message = result > 0 ? "Rezervasyon oluşturuldu" : "Rezervasyon işlemi esnasında bir hata oluştu",
-                    Data = result > 0 ? reservationId.ToString() : ""
+                    Success = false,
+                    Message = "İsteğinize uygun yeterli sayıda oda bulunmuyor"
                 };
             }
-            return new Response<string>
+            catch (Exception e)
             {
-                Success = false,
-                Message = "İsteğinize uygun yeterli sayıda oda bulunmuyor"
-            };
+                return new Response<string>
+                {
+                    Success = false,
+                    Message = e.Message
+                };
+            }
         }
         public async Task<Response<string>> CancelReservation(string resevationId)
         {
-            var reservation = await reservationReadRepository.GetSingleAsync(r => r.Id == Guid.Parse(resevationId) && !r.LogicalDeleteKey.HasValue);
-            if (reservation != null)
+            try
             {
-                var hRoom = await hotelRoomReadRepository.GetSingleAsync(h => h.Id == reservation.HotelRoomId);
-                reservation.LogicalDeleteKey = Guid.NewGuid();
-                int result = await reservationWriteRepository.SaveAsync();
-                if (result > 0)
+                var reservation = await reservationReadRepository.GetSingleAsync(r => r.Id == Guid.Parse(resevationId) && !r.LogicalDeleteKey.HasValue);
+                if (reservation != null)
                 {
-                    hRoom.SoldAllotment = hRoom.SoldAllotment - reservation.RoomCount;
-                    result = await hotelRoomWriteRepository.SaveAsync();
+                    var hRoom = await hotelRoomReadRepository.GetSingleAsync(h => h.Id == reservation.HotelRoomId);
+                    reservation.LogicalDeleteKey = Guid.NewGuid();
+                    int result = await reservationWriteRepository.SaveAsync();
+                    if (result > 0)
+                    {
+                        hRoom.SoldAllotment = hRoom.SoldAllotment - reservation.RoomCount;
+                        result = await hotelRoomWriteRepository.SaveAsync();
+                    }
+                    return new Response<string>
+                    {
+                        Success = result > 0 ? true : false,
+                        Message = result > 0 ? "Rezervasyonunuz iptal edildi" : "Rezervasyon iptal işlemi esnasında bir hata oluştu",
+                    };
                 }
                 return new Response<string>
                 {
-                    Success = result > 0 ? true : false,
-                    Message = result > 0 ? "Rezervasyonunuz iptal edildi" : "Rezervasyon iptal işlemi esnasında bir hata oluştu",
+                    Success = false,
+                    Message = "İsteğinize uygun rezervasyon bulunmuyor"
                 };
             }
-            return new Response<string>
+            catch (Exception e)
             {
-                Success = false,
-                Message = "İsteğinize uygun rezervasyon bulunmuyor"
-            };
+                return new Response<string>
+                {
+                    Success = false,
+                    Message = e.Message
+                };
+            }
         }
     }
 }
